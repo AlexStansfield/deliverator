@@ -29,6 +29,17 @@ describe("QBittorrentAdapter", () => {
   it("fails clearly on wrong password", async () => {
     const { adapter } = make({}, "nope");
     await expect(adapter.testConnection()).rejects.toThrow(/username or password/);
+    const v52 = make({ version: "v5.2.4" }, "nope");
+    await expect(v52.adapter.testConnection()).rejects.toThrow(/username or password/);
+  });
+
+  it("handles the 5.2 login reply (204, QBT_SID cookie)", async () => {
+    const { adapter, mock } = make({ version: "v5.2.4" });
+    expect(await adapter.testConnection()).toEqual({ version: "v5.2.4" });
+    const r = await adapter.poll();
+    expect(r.downloads.length).toBe(mock.state.torrents.length);
+    await adapter.pause([mock.state.torrents[0]!.hash]);
+    expect(mock.state.calls.at(-1)?.path).toBe("/api/v2/torrents/stop");
   });
 
   it("polls and normalises torrents", async () => {

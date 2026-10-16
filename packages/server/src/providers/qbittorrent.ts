@@ -129,17 +129,29 @@ export class QBittorrentAdapter implements ProviderAdapter {
       },
       this.timeoutMs,
     );
-    const text = await res.text();
+    const text = (await res.text()).trim();
+    // Older versions answer 200 "Ok." / "Fails."; qBittorrent 5.2+ answers 204 on success.
     if (res.status === 403) throw new ProviderError("qBittorrent banned this address after too many failed logins. Wait a few minutes.", 403);
-    if (!res.ok || text.trim() !== "Ok.") throw new ProviderError("qBittorrent rejected the username or password", 401);
+    if (res.ok && text === "Fails.") throw new ProviderError("qBittorrent rejected the username or password", 401);
+    if (!res.ok || (res.status === 200 && text !== "Ok.")) {
+      const snippet = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+      if (res.status === 401) {
+        throw new ProviderError(
+          "qBittorrent rejected the login. Either the username or password is wrong, or its Host header validation blocked the request: use the port qBittorrent itself listens on (not a remapped one), or add this host under WebUI → Server domains.",
+          401,
+        );
+      }
+      throw new ProviderError(`qBittorrent login returned ${res.status}${snippet ? ` "${snippet}"` : ""}. Check that the URL points at the qBittorrent WebUI.`, res.status);
+    }
+    // Cookie is "SID" on 4.x/5.0 and "QBT_SID_<port>" on newer versions.
     const setCookie = res.headers.get("set-cookie") ?? "";
-    const m = setCookie.match(/SID=([^;]+)/);
+    const m = setCookie.match(/(?:^|[\s,;])((?:QBT_)?SID[^=;,\s]*)=([^;]+)/);
     if (!m) {
       // Some setups (bypass auth for localhost / whitelisted subnets) never issue a cookie.
       this.cookie = null;
       return;
     }
-    this.cookie = `SID=${m[1]}`;
+    this.cookie = `${m[1]}=${m[2]}`;
   }
 
   private async request(path: string, init: RequestInit = {}, retry = true): Promise<Response> {
@@ -163,7 +175,11 @@ export class QBittorrentAdapter implements ProviderAdapter {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams(fields).toString(),
     });
-    if (!res.ok) throw new ProviderError(`qBittorrent ${path} failed: ${res.status} ${(await res.text()).slice(0, 200)}`, res.status);
+    if (!res.ok) {
+      const body = (await res.text()).trim().slice(0, 200);
+      if (res.status === 409 && path.endsWith("/setCategory")) throw new ProviderError(`qBittorrent does not have a category named "${fields.category}"`, 409);
+      throw new ProviderError(`qBittorrent ${path.replace("/api/v2/", "")} failed: ${res.status}${body ? ` ${body}` : ""}`, res.status);
+    }
     return res;
   }
 
@@ -239,6 +255,8 @@ export class QBittorrentAdapter implements ProviderAdapter {
     }
     const res = await this.request("/api/v2/torrents/add", { method: "POST", body });
     const text = (await res.text()).trim();
+    if (res.status === 409) throw new ProviderError("qBittorrent already has this torrent", 409);
+    if (res.status === 415) throw new ProviderError("qBittorrent could not parse that as a torrent or magnet link", 415);
     if (!res.ok || text === "Fails.") throw new ProviderError(`qBittorrent did not accept the torrent${text && text !== "Fails." ? `: ${text}` : ""}`, res.status);
   }
 

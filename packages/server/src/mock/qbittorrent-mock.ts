@@ -70,6 +70,9 @@ export function createQbMock(opts: MockQbOptions = {}) {
   const password = opts.password ?? "adminadmin";
   const version = opts.version ?? "v5.0.2";
   const modern = Number.parseInt(version.replace(/^v/, ""), 10) >= 5;
+  const [vMajor = 0, vMinor = 0] = version.replace(/^v/, "").split(".").map(Number);
+  /** 5.2+ answers 204 with a QBT_SID_<port> cookie and 401 on bad credentials. */
+  const newLogin = vMajor > 5 || (vMajor === 5 && vMinor >= 2);
   const state = {
     torrents: opts.torrents ?? sampleTorrents(),
     categories: new Set(["linux-isos", "movies", "tv"]),
@@ -82,11 +85,15 @@ export function createQbMock(opts: MockQbOptions = {}) {
   for (const t of state.torrents) if (t.category) state.categories.add(t.category);
 
   const app = new Hono();
-  const authed = (cookie: string | undefined) => cookie?.includes(`SID=${state.sid}`);
+  const authed = (cookie: string | undefined) => cookie?.includes(`SID_8080=${state.sid}`) || cookie?.includes(`SID=${state.sid}`);
 
   app.post("/api/v2/auth/login", async (c) => {
     const body = await c.req.parseBody();
-    if (body.username !== username || body.password !== password) return c.text("Fails.", 200);
+    if (body.username !== username || body.password !== password) return newLogin ? c.text("Unauthorized", 401) : c.text("Fails.", 200);
+    if (newLogin) {
+      c.header("set-cookie", `QBT_SID_8080=${state.sid}; HttpOnly; SameSite=Lax; path=/`);
+      return c.body(null, 204);
+    }
     c.header("set-cookie", `SID=${state.sid}; HttpOnly; path=/`);
     return c.text("Ok.");
   });

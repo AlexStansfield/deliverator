@@ -24,7 +24,7 @@ export const NativeSelect = forwardRef<HTMLSelectElement, SelectHTMLAttributes<H
 
 export function Field({ label, htmlFor, hint, children }: { label: string; htmlFor?: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1.5">
+    <div className="grid content-start gap-1.5">
       <label htmlFor={htmlFor} className="text-[12px] font-bold text-muted">
         {label}
       </label>
