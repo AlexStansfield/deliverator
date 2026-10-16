@@ -1,0 +1,5 @@
+packages:
+  - packages/*
+# better-sqlite3 ships prebuilt binaries; never run its node-gyp build.
+onlyBuiltDependencies:
+  - esbuild

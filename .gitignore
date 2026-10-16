@@ -1,13 +1,12 @@
 # Dependencies
 node_modules/
-.venv/
-venv/
-__pycache__/
 
 # Build output
 dist/
-build/
-*.egg-info/
+*.tsbuildinfo
+
+# Runtime data (SQLite db, secret key)
+data/
 
 # Environment / secrets
 .env
@@ -21,3 +20,11 @@ build/
 
 # Logs
 *.log
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Reference screenshots (local only)
+qbitwebui/
