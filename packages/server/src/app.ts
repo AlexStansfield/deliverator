@@ -5,6 +5,10 @@ import type { AppInfo } from "@deliverator/shared";
 import type { AppContext, AppEnv } from "./context.js";
 import { authRoutes } from "./routes/auth.js";
 import { settingsRoutes } from "./routes/settings.js";
+import { providerRoutes } from "./routes/providers.js";
+import { downloadRoutes } from "./routes/downloads.js";
+import { eventRoutes } from "./routes/events.js";
+import { requireAuth } from "./auth/middleware.js";
 import { resolveSession, SESSION_COOKIE } from "./auth/session.js";
 import { createStaticHandler } from "./static.js";
 
@@ -36,6 +40,10 @@ export function createApp(ctx: AppContext) {
     .get("/health", (c) => c.json({ ok: true }))
     .route("/auth", authRoutes)
     .route("/settings", settingsRoutes)
+    .route("/providers", providerRoutes)
+    .route("/downloads", downloadRoutes)
+    .route("/events", eventRoutes)
+    .get("/state", requireAuth, (c) => c.json(ctx.providers.getSnapshot()))
     .notFound((c) => c.json({ error: "Not found" }, 404));
 
   app.route("/api", api);

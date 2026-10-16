@@ -7,6 +7,7 @@ import { purgeExpiredSessions } from "./auth/session.js";
 import { createApp } from "./app.js";
 import { APP_VERSION } from "./version.js";
 import type { AppContext } from "./context.js";
+import { ProviderManager } from "./providers/manager.js";
 
 const config = loadConfig();
 setLogLevel(config.logLevel);
@@ -22,7 +23,9 @@ const created = ensureAdminUser(db);
 if (created) console.log(passwordBanner(created.username, created.password));
 purgeExpiredSessions(db);
 
-const ctx: AppContext = { config, db, log, version: APP_VERSION };
+const providers = new ProviderManager(db, logger("providers"), { pollIntervalMs: config.pollIntervalMs, secretKey: config.secretKey });
+providers.start();
+const ctx: AppContext = { config, db, log, version: APP_VERSION, providers };
 const app = createApp(ctx);
 
 const server = serve({ fetch: app.fetch, port: config.port, hostname: config.host }, (info) => {
@@ -36,6 +39,7 @@ const sessionSweep = setInterval(() => purgeExpiredSessions(db), 6 * 60 * 60 * 1
 function shutdown(signal: string) {
   log.info(`${signal} received, shutting down`);
   clearInterval(sessionSweep);
+  providers.stop();
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 3000).unref();
 }

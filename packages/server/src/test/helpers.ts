@@ -6,8 +6,10 @@ import type { Config } from "../config.js";
 import { openDb } from "../db/index.js";
 import { logger } from "../log.js";
 import type { AppContext } from "../context.js";
+import { ProviderManager } from "../providers/manager.js";
+import type { AdapterOptions } from "../providers/types.js";
 
-export function testContext(overrides: Partial<Config> = {}): AppContext {
+export function testContext(overrides: Partial<Config> = {}, adapterOptions?: AdapterOptions): AppContext {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "deliverator-test-"));
   const config: Config = {
     port: 0,
@@ -22,7 +24,10 @@ export function testContext(overrides: Partial<Config> = {}): AppContext {
     clientDir: null,
     ...overrides,
   };
-  return { config, db: openDb(config.dbPath), log: logger("test"), version: "test" };
+  const db = openDb(config.dbPath);
+  const log = logger("test");
+  const providers = new ProviderManager(db, log, { pollIntervalMs: config.pollIntervalMs, secretKey: config.secretKey, adapterOptions });
+  return { config, db, log, version: "test", providers };
 }
 
 /** Extracts the session cookie value from a login response. */
