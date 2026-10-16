@@ -85,6 +85,13 @@ describe("SABnzbdAdapter", () => {
     expect(mock.state.calls.filter((c) => c.name === "delete").every((c) => c.del_files === "1")).toBe(true);
   });
 
+  it("deletes history-only items and reports unknown ids", async () => {
+    const { adapter, mock } = make();
+    await adapter.remove(["SABnzbd_nzo_d4"], false);
+    expect(mock.state.items.some((i) => i.nzo_id === "SABnzbd_nzo_d4")).toBe(false);
+    await expect(adapter.remove(["does-not-exist"], false)).rejects.toThrow(/queue or history/);
+  });
+
   it("sets and clears the speed limit", async () => {
     const { adapter, mock } = make();
     await adapter.setSpeedLimits({ download: 5 * 1024 * 1024 });

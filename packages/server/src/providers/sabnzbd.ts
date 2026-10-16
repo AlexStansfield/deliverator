@@ -148,7 +148,7 @@ export class SABnzbdAdapter implements ProviderAdapter {
     this.timeoutMs = opts.timeoutMs ?? 15_000;
   }
 
-  private async call<T>(params: Record<string, string>, init: RequestInit = {}): Promise<T> {
+  private async call<T>(params: Record<string, string>, init: RequestInit = {}, opts: { allowFalse?: boolean } = {}): Promise<T> {
     const qs = new URLSearchParams({ ...params, output: "json", apikey: this.apiKey });
     const res = await fetchWithTimeout(this.fetchFn, joinUrl(this.baseUrl, `/api?${qs}`), init, this.timeoutMs);
     if (res.status === 401 || res.status === 403) throw new ProviderError("SABnzbd rejected the API key", res.status);
@@ -161,8 +161,8 @@ export class SABnzbdAdapter implements ProviderAdapter {
       throw new ProviderError(`SABnzbd returned something that is not JSON for ${params.mode}. Is the URL pointing at SABnzbd?`);
     }
     const obj = body as { status?: boolean; error?: string };
-    if (obj && obj.status === false) throw new ProviderError(obj.error || `SABnzbd ${params.mode} failed`);
     if (obj && typeof obj.error === "string" && /api key/i.test(obj.error)) throw new ProviderError("SABnzbd rejected the API key", 401);
+    if (obj && obj.status === false && !opts.allowFalse) throw new ProviderError(obj.error || `SABnzbd ${params.mode} failed`);
     return body as T;
   }
 
@@ -288,9 +288,14 @@ export class SABnzbdAdapter implements ProviderAdapter {
   }
   async remove(ids: string[], deleteFiles: boolean) {
     const del = deleteFiles ? "1" : "0";
-    // Items can be in the queue or in history; try both, SABnzbd ignores unknown ids.
-    await this.call({ mode: "queue", name: "delete", value: ids.join(","), del_files: del });
-    await this.call({ mode: "history", name: "delete", value: ids.join(","), del_files: del });
+    // An item lives either in the queue or in history. SABnzbd answers status:false for the
+    // one it is not in, so try both and only fail when neither claims it.
+    type Reply = { status?: boolean; error?: string; nzo_ids?: string[] };
+    const q = await this.call<Reply>({ mode: "queue", name: "delete", value: ids.join(","), del_files: del }, {}, { allowFalse: true });
+    const h = await this.call<Reply>({ mode: "history", name: "delete", value: ids.join(","), del_files: del }, {}, { allowFalse: true });
+    if (q.status === false && h.status === false) {
+      throw new ProviderError(q.error || h.error || "SABnzbd could not find that download in its queue or history");
+    }
   }
   async moveToTop(ids: string[]) {
     for (const id of ids) await this.call({ mode: "switch", value: id, value2: "0" });

@@ -77,8 +77,9 @@ export function createSabMock(opts: MockSabOptions = {}) {
         }
         if (q.name === "delete") {
           const ids = q.value!.split(",");
+          const hit = state.items.filter((i) => i.inQueue && ids.includes(i.nzo_id)).map((i) => i.nzo_id);
           state.items = state.items.filter((i) => !(i.inQueue && ids.includes(i.nzo_id)));
-          return c.json({ status: true, nzo_ids: ids });
+          return c.json({ status: hit.length > 0, nzo_ids: hit });
         }
         if (q.name === "change_cat") {
           state.items.filter((i) => q.value!.split(",").includes(i.nzo_id)).forEach((i) => (i.cat = q.value2 ?? "*"));
@@ -118,8 +119,9 @@ export function createSabMock(opts: MockSabOptions = {}) {
       case "history": {
         if (q.name === "delete") {
           const ids = q.value!.split(",");
+          const hit = state.items.some((i) => !i.inQueue && ids.includes(i.nzo_id));
           state.items = state.items.filter((i) => !(!i.inQueue && ids.includes(i.nzo_id)));
-          return c.json({ status: true });
+          return c.json({ status: hit });
         }
         return c.json({
           history: {
