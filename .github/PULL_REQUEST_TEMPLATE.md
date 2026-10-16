@@ -4,7 +4,7 @@
 
 ## How to check
 
-<!-- Steps against the mocks (`pnpm --filter @deliverator/server mock`) or a real client. -->
+<!-- Steps against the mocks (`yarn mock`) or a real client. -->
 
-- [ ] `pnpm test` and `pnpm typecheck` pass
+- [ ] `yarn test` and `yarn typecheck` pass
 - [ ] Checked at phone width if the UI changed

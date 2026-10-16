@@ -4,15 +4,27 @@
   "private": true,
   "description": "A simple, unified web UI for your download clients (qBittorrent, SABnzbd).",
   "license": "MIT",
-  "packageManager": "pnpm@10.27.0",
-  "engines": { "node": ">=20.19" },
+  "packageManager": "yarn@4.10.3",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
-    "dev": "pnpm -r --parallel --filter @deliverator/server --filter @deliverator/client dev",
-    "build": "pnpm -r build",
+    "dev": "yarn workspaces foreach -A --parallel --interlaced run dev",
+    "build": "yarn workspaces foreach -A --topological run build",
     "start": "node packages/server/dist/index.js",
-    "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
-    "db:generate": "pnpm --filter @deliverator/server db:generate"
+    "test": "yarn workspaces foreach -A run test",
+    "typecheck": "yarn workspaces foreach -A run typecheck",
+    "lint": "yarn workspaces foreach -A run lint",
+    "mock": "yarn workspace @deliverator/server mock",
+    "cli": "yarn workspace @deliverator/server cli",
+    "db:generate": "yarn workspace @deliverator/server db:generate"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependenciesMeta": {
+    "better-sqlite3": {
+      "built": false
+    }
   }
 }

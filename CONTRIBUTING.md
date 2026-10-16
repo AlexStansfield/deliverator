@@ -14,10 +14,10 @@ Thanks for taking an interest. A few notes to keep things smooth.
 ## Workflow
 
 ```bash
-pnpm install
-pnpm --filter @deliverator/server mock   # terminal 1
-pnpm dev                                  # terminal 2
-pnpm test && pnpm typecheck               # before you push
+yarn install
+yarn mock   # terminal 1
+yarn dev                                  # terminal 2
+yarn test && yarn typecheck               # before you push
 ```
 
 Open a pull request against `main`. CI runs typecheck, tests and the Docker build.

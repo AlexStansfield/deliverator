@@ -107,25 +107,25 @@ A fresh random password is printed and every session is logged out.
 
 ## Running without Docker
 
-Needs Node 22 and pnpm (`corepack enable`).
+Needs Node 22 and Yarn 4 (`corepack enable` gives you the right version).
 
 ```bash
 git clone https://github.com/AlexStansfield/deliverator.git
 cd deliverator
-pnpm install
-pnpm build
-DATA_DIR=./data pnpm start          # http://localhost:3000
-pnpm --filter @deliverator/server cli reset-password   # password reset
+yarn install
+yarn build
+DATA_DIR=./data yarn start          # http://localhost:3000
+yarn cli reset-password   # password reset
 ```
 
 ## Development
 
 ```bash
-pnpm install
-pnpm --filter @deliverator/server mock   # fake qBittorrent (:18080) and SABnzbd (:18081) with moving data
-pnpm dev                                  # API on :3000, Vite client on :5173 with proxy
-pnpm test                                 # adapter and API tests against the mocks
-pnpm typecheck
+yarn install
+yarn mock   # fake qBittorrent (:18080) and SABnzbd (:18081) with moving data
+yarn dev                                  # API on :3000, Vite client on :5173 with proxy
+yarn test                                 # adapter and API tests against the mocks
+yarn typecheck
 ```
 
 Add the mocks in Settings as `http://localhost:18080` (admin / adminadmin) and `http://localhost:18081`

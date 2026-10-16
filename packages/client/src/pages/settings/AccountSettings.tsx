@@ -70,7 +70,7 @@ export function AccountSettings() {
             password is printed:
           </p>
           <pre className="overflow-x-auto rounded-lg border border-line bg-panel-2 px-3 py-2 font-mono text-[12px]">docker exec deliverator deliverator reset-password</pre>
-          <p className="text-[12.5px] text-muted">Outside Docker: <code className="rounded border border-line bg-panel-2 px-1.5 py-0.5 font-mono text-[12px]">pnpm deliverator reset-password</code></p>
+          <p className="text-[12.5px] text-muted">Outside Docker: <code className="rounded border border-line bg-panel-2 px-1.5 py-0.5 font-mono text-[12px]">yarn cli reset-password</code></p>
         </CardBody>
       </Card>
     </>

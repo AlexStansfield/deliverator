@@ -28,3 +28,12 @@ test-results/
 
 # Reference screenshots (local only)
 qbitwebui/
+
+# Yarn (corepack provides the binary; only the project config is committed)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
