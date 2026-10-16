@@ -58,6 +58,8 @@ export interface ProviderSummary {
   name: string;
   url: string;
   enabled: boolean;
+  /** qBittorrent login name; secrets never leave the server */
+  username?: string;
   capabilities: ProviderCapabilities;
   /** Categories known to the provider (qBittorrent categories, SABnzbd categories) */
   categories: string[];

@@ -37,7 +37,7 @@ export interface UserPreferences {
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: "midnight",
   refreshInterval: 2000,
-  speedPresets: [2 * 1024 * 1024, 5 * 1024 * 1024, 10 * 1024 * 1024],
+  speedPresets: [2_000_000, 5_000_000, 10_000_000],
   confirmDelete: true,
   deleteFilesByDefault: true,
 };

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
 import { AuthProvider } from "./lib/auth";
 import { ThemeProvider } from "./theme/ThemeProvider";
+import { ToastProvider } from "./lib/toast";
+import { LiveStateProvider } from "./lib/state";
 import { basePath } from "./lib/env";
 import { applyTheme, readStoredThemeId, resolveTheme } from "./theme/themes";
 import "@fontsource-variable/manrope";
@@ -22,11 +24,15 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename={basePath || "/"}>
-        <AuthProvider>
-          <ThemeProvider>
-            <App />
-          </ThemeProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <LiveStateProvider>
+                <App />
+              </LiveStateProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

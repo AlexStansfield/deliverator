@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { AddDownloadResult } from "@deliverator/shared";
 import type { AppEnv } from "../context.js";
 import { requireAuth } from "../auth/middleware.js";
-import { detectFileKind, detectLinkKind, type LinkKind } from "../providers/detect.js";
+import { detectFileKind, detectLinkKind, type LinkKind } from "@deliverator/shared";
 import type { ProviderEntry, ProviderManager } from "../providers/manager.js";
 
 const ACTIONS = ["pause", "resume", "delete", "top", "bottom", "retry", "setCategory"] as const;

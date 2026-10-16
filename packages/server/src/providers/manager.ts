@@ -171,6 +171,7 @@ export class ProviderManager extends EventEmitter {
       name: e.row.name,
       url: e.row.url,
       enabled: e.row.enabled,
+      username: e.config.credentials.type === "qbittorrent" ? e.config.credentials.username : undefined,
       capabilities: PROVIDER_DEFINITIONS[e.config.type].capabilities,
       categories: e.categories,
       createdAt: e.row.createdAt,
