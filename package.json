@@ -2,6 +2,7 @@
   "name": "deliverator",
   "version": "0.1.1",
   "private": true,
+  "type": "module",
   "description": "A simple, unified web UI for your download clients (qBittorrent, SABnzbd).",
   "license": "MIT",
   "packageManager": "yarn@4.10.3",
